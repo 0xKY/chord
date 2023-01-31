@@ -11,7 +11,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import java.util.UUID;
 
@@ -24,7 +24,7 @@ public class BoatSpawnNetworkHandler {
     public static void accept(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
         int id = buf.readVarInt();
         UUID uuid = buf.readUuid();
-        EntityType<?> type = Registry.ENTITY_TYPE.get(buf.readVarInt());
+        EntityType<?> type = Registries.ENTITY_TYPE.get(buf.readVarInt());
         double x = buf.readDouble();
         double y = buf.readDouble();
         double z = buf.readDouble();

@@ -1,9 +1,11 @@
 package me.andante.chord.block.vanilla;
 
-import net.minecraft.block.WoodenButtonBlock;
 
-public class PublicWoodenButtonBlock extends WoodenButtonBlock {
-    public PublicWoodenButtonBlock(Settings settings) {
-        super(settings);
+import net.minecraft.block.ButtonBlock;
+import net.minecraft.sound.SoundEvent;
+
+public class PublicWoodenButtonBlock extends ButtonBlock {
+    public PublicWoodenButtonBlock(Settings settings, int i, boolean bl, SoundEvent soundEvent, SoundEvent soundEvent2) {
+        super(settings, i, bl, soundEvent, soundEvent2);
     }
 }

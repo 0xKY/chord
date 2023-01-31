@@ -10,6 +10,7 @@ import me.andante.chord.item.CBoatItem;
 import me.andante.chord.util.CSignType;
 import me.andante.chord.util.CTagUtil;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -26,15 +27,19 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.*;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.SignType;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntryList;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -71,7 +76,7 @@ public class WoodBlocks {
 
     public final EntityType<CBoatEntity> BOAT_ENTITY;
 
-    public final Optional<RegistryEntryList.Named<Item>> AXES = Registry.ITEM.getEntryList(ConventionalItemTags.AXES);
+    public final Optional<RegistryEntryList.Named<Item>> AXES = Registries.ITEM.getEntryList(ConventionalItemTags.AXES);
 
     private WoodBlocks(String modId, final String id, ItemGroup itemGroup, boolean flammable, int leafItemColor, SaplingGenerator saplingGenerator, BoatEntity.Type boatType, PressurePlateBlock.ActivationRule pressurePlateActivationRule) {
         this.id = id;
@@ -80,35 +85,35 @@ public class WoodBlocks {
         this.flammable = flammable;
         this.leafItemColor = leafItemColor;
 
-        PLANKS = register(id + "_planks", new Block(FabricBlockSettings.copy(Blocks.OAK_PLANKS)));
-        SAPLING = register(id + "_sapling", new PublicSaplingBlock(saplingGenerator, FabricBlockSettings.copy(Blocks.OAK_SAPLING)));
-        POTTED_SAPLING = register("potted_" + id + "_sapling", new FlowerPotBlock(this.SAPLING, FabricBlockSettings.of(Material.DECORATION).breakInstantly().nonOpaque()), false);
-        LOG = register(id + "_log", new PillarBlock(FabricBlockSettings.copy(Blocks.OAK_LOG)));
-        STRIPPED_LOG = register("stripped_" + id + "_log", new PillarBlock(FabricBlockSettings.copy(Blocks.STRIPPED_OAK_LOG)));
-        STRIPPED_WOOD = register("stripped_" + id + "_wood", new PillarBlock(FabricBlockSettings.copy(Blocks.STRIPPED_OAK_WOOD)));
-        WOOD = register(id + "_wood", new PillarBlock(FabricBlockSettings.copy(Blocks.OAK_WOOD)));
-        LEAVES = register(id + "_leaves", new LeavesBlock(FabricBlockSettings.copy(Blocks.OAK_LEAVES)));
-        SLAB = register(id + "_slab", new SlabBlock(FabricBlockSettings.copy(Blocks.OAK_SLAB)));
-        PRESSURE_PLATE = register(id + "_pressure_plate", new PublicPressurePlateBlock(pressurePlateActivationRule, FabricBlockSettings.copy(Blocks.OAK_PRESSURE_PLATE)));
-        FENCE = register(id + "_fence", new FenceBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE)));
-        TRAPDOOR = register(id + "_trapdoor", new PublicTrapdoorBlock(FabricBlockSettings.copy(Blocks.OAK_TRAPDOOR)));
-        FENCE_GATE = register(id + "_fence_gate", new FenceGateBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE_GATE)));
-        STAIRS = register(id + "_stairs", new PublicStairsBlock(PLANKS.getDefaultState(), FabricBlockSettings.copy(Blocks.OAK_STAIRS)));
-        BUTTON = register(id + "_button", new PublicWoodenButtonBlock(FabricBlockSettings.copy(Blocks.OAK_BUTTON)));
-        DOOR = register(id + "_door", new PublicDoorBlock(FabricBlockSettings.copy(Blocks.OAK_DOOR)));
+        PLANKS = register(id + "_planks", new Block(FabricBlockSettings.copy(Blocks.OAK_PLANKS)), this.itemGroup, this.itemGroup.getDisplayStacks().stream().toList().get(0).getItem());
+        SAPLING = register(id + "_sapling", new PublicSaplingBlock(saplingGenerator, FabricBlockSettings.copy(Blocks.OAK_SAPLING)), this.itemGroup, PLANKS.asItem());
+        POTTED_SAPLING = register("potted_" + id + "_sapling", new FlowerPotBlock(this.SAPLING, FabricBlockSettings.of(Material.DECORATION).breakInstantly().nonOpaque()), false, null, null);
+        LOG = register(id + "_log", new PillarBlock(FabricBlockSettings.copy(Blocks.OAK_LOG)), this.itemGroup, SAPLING.asItem());
+        STRIPPED_LOG = register("stripped_" + id + "_log", new PillarBlock(FabricBlockSettings.copy(Blocks.STRIPPED_OAK_LOG)), this.itemGroup, LOG.asItem());
+        STRIPPED_WOOD = register("stripped_" + id + "_wood", new PillarBlock(FabricBlockSettings.copy(Blocks.STRIPPED_OAK_WOOD)), this.itemGroup, STRIPPED_LOG.asItem());
+        WOOD = register(id + "_wood", new PillarBlock(FabricBlockSettings.copy(Blocks.OAK_WOOD)), this.itemGroup, STRIPPED_WOOD.asItem());
+        LEAVES = register(id + "_leaves", new LeavesBlock(FabricBlockSettings.copy(Blocks.OAK_LEAVES)), this.itemGroup, WOOD.asItem());
+        SLAB = register(id + "_slab", new SlabBlock(FabricBlockSettings.copy(Blocks.OAK_SLAB)), this.itemGroup, LEAVES.asItem());
+        PRESSURE_PLATE = register(id + "_pressure_plate", new PublicPressurePlateBlock(pressurePlateActivationRule, FabricBlockSettings.copy(Blocks.OAK_PRESSURE_PLATE), SoundEvents.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_ON, SoundEvents.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_OFF), this.itemGroup, SLAB.asItem());
+        FENCE = register(id + "_fence", new FenceBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE)), this.itemGroup, PRESSURE_PLATE.asItem());
+        TRAPDOOR = register(id + "_trapdoor", new PublicTrapdoorBlock(FabricBlockSettings.copy(Blocks.OAK_TRAPDOOR), SoundEvents.BLOCK_WOODEN_TRAPDOOR_OPEN, SoundEvents.BLOCK_WOODEN_TRAPDOOR_CLOSE), this.itemGroup, FENCE.asItem());
+        FENCE_GATE = register(id + "_fence_gate", new FenceGateBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE_GATE), SoundEvents.BLOCK_FENCE_GATE_OPEN, SoundEvents.BLOCK_FENCE_GATE_CLOSE), this.itemGroup, TRAPDOOR.asItem());
+        STAIRS = register(id + "_stairs", new PublicStairsBlock(PLANKS.getDefaultState(), FabricBlockSettings.copy(Blocks.OAK_STAIRS)), this.itemGroup, FENCE_GATE.asItem());
+        BUTTON = register(id + "_button", createWoodenButtonBlock(), this.itemGroup, STAIRS.asItem());
+        DOOR = register(id + "_door", new PublicDoorBlock(FabricBlockSettings.copy(Blocks.OAK_DOOR), SoundEvents.BLOCK_WOODEN_DOOR_CLOSE, SoundEvents.BLOCK_WOODEN_DOOR_OPEN), this.itemGroup, BUTTON.asItem());
 
         SignType signType = SignType.register(new CSignType(new Identifier(modId, id).toString()));
-        SIGN = register(id + "_sign", new CSignBlock(FabricBlockSettings.copy(Blocks.OAK_SIGN), signType), false);
-        WALL_SIGN = register(id + "_wall_sign", new CWallSignBlock(FabricBlockSettings.copy(Blocks.OAK_WALL_SIGN), signType), false);
-        SIGN_ITEM = register(id + "_sign", new SignItem(new Item.Settings().maxCount(16).group(itemGroup), SIGN, WALL_SIGN));
+        SIGN = register(id + "_sign", new CSignBlock(FabricBlockSettings.copy(Blocks.OAK_SIGN), signType), false, null, null);
+        WALL_SIGN = register(id + "_wall_sign", new CWallSignBlock(FabricBlockSettings.copy(Blocks.OAK_WALL_SIGN), signType), false, null, null);
+        SIGN_ITEM = register(id + "_sign", new SignItem(new Item.Settings().maxCount(16), SIGN, WALL_SIGN), this.itemGroup, DOOR.asItem());
 
         BOAT_ITEM = register(id + "_boat", new CBoatItem(new Supplier<>() {
             @Override
             public EntityType<CBoatEntity> get() {
                 return BOAT_ENTITY;
             }
-        }, new Item.Settings().maxCount(1).group(itemGroup)));
-        BOAT_ENTITY = Registry.register(Registry.ENTITY_TYPE, new Identifier(modId, id + "_boat"), FabricEntityTypeBuilder.<CBoatEntity>create(SpawnGroup.MISC, (entity, world) -> new CBoatEntity(entity, world, new CBoatInfo(BOAT_ITEM, PLANKS.asItem(), new Identifier(modId, "textures/entity/boat/" + id + ".png"), boatType))).dimensions(EntityDimensions.fixed(1.375F, 0.5625F)).build());
+        }, new Item.Settings().maxCount(1)), this.itemGroup, SIGN_ITEM);
+        BOAT_ENTITY = Registry.register(Registries.ENTITY_TYPE, new Identifier(modId, id + "_boat"), FabricEntityTypeBuilder.<CBoatEntity>create(SpawnGroup.MISC, (entity, world) -> new CBoatEntity(entity, world, new CBoatInfo(BOAT_ITEM, PLANKS.asItem(), new Identifier(modId, "textures/entity/boat/" + id + ".png"), boatType))).dimensions(EntityDimensions.fixed(1.375F, 0.5625F)).build());
 
         ComposterBlock.ITEM_TO_LEVEL_INCREASE_CHANCE.put(LEAVES.asItem(), 0.3F);
         if (isFlammable()) {
@@ -167,7 +172,7 @@ public class WoodBlocks {
             )
         );
 
-        Registry.register(Registry.BLOCK_ENTITY_TYPE, id, FabricBlockEntityTypeBuilder.create(SignBlockEntity::new, SIGN, WALL_SIGN).build(Util.getChoiceType(TypeReferences.BLOCK_ENTITY, id + "_sign")));
+        Registry.register(Registries.BLOCK_ENTITY_TYPE, id, FabricBlockEntityTypeBuilder.create(SignBlockEntity::new, SIGN, WALL_SIGN).build(Util.getChoiceType(TypeReferences.BLOCK_ENTITY, id + "_sign")));
     }
 
     public String getId() {
@@ -259,15 +264,28 @@ public class WoodBlocks {
     }
 
     // registries
-    private Block register(String id, Block block, boolean registerItem) {
-        if (registerItem) register(id, new BlockItem(block, new Item.Settings().group(this.itemGroup)));
-        return Registry.register(Registry.BLOCK, new Identifier(this.modId, id), block);
-    }
-    private Block register(String id, Block block) {
-        return this.register(id, block, true);
+    private Block register(String id, Block block, boolean registerItem, ItemGroup group, Item before) {
+        BlockItem item = new BlockItem(block, new Item.Settings());
+        if (registerItem) register(id, item, group, before);
+        return Registry.register(Registries.BLOCK, new Identifier(this.modId, id), block);
     }
 
-    private Item register(String id, Item item) {
-        return Registry.register(Registry.ITEM, new Identifier(this.modId, id), item);
+    private Block register(String id, Block block, ItemGroup group, Item before) {
+        return this.register(id, block, true, group, before);
+    }
+
+    private Item register(String id, Item item, ItemGroup group, Item before) {
+        if (group != null & before != null) {
+            ItemGroupEvents.modifyEntriesEvent(this.itemGroup).register(content -> content.addAfter(before, item));
+        }
+        return Registry.register(Registries.ITEM, new Identifier(this.modId, id), item);
+    }
+
+    private static ButtonBlock createWoodenButtonBlock() {
+        return createWoodenButtonBlock(BlockSoundGroup.WOOD, SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON);
+    }
+
+    private static ButtonBlock createWoodenButtonBlock(BlockSoundGroup blockSoundGroup, SoundEvent soundEvent, SoundEvent soundEvent2) {
+        return new ButtonBlock(AbstractBlock.Settings.of(Material.DECORATION).noCollision().strength(0.5F).sounds(blockSoundGroup), 30, true, soundEvent, soundEvent2);
     }
 }

@@ -13,11 +13,12 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
@@ -93,12 +94,12 @@ public class CBoatEntity extends BoatEntity {
     }
 
     @Override
-    public Packet<?> createSpawnPacket() {
+    public Packet<ClientPlayPacketListener> createSpawnPacket() {
         final PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 
         buf.writeVarInt(this.getId());
         buf.writeUuid(this.uuid);
-        buf.writeVarInt(Registry.ENTITY_TYPE.getRawId(this.getType()));
+        buf.writeVarInt(Registries.ENTITY_TYPE.getRawId(this.getType()));
         buf.writeDouble(this.getX());
         buf.writeDouble(this.getY());
         buf.writeDouble(this.getZ());
@@ -109,12 +110,12 @@ public class CBoatEntity extends BoatEntity {
     }
 
     @Override
-    public void setBoatType(BoatEntity.Type type) {
+    public void setVariant(Type type) {
         throw new UnsupportedOperationException("Tried to set the boat type of a " + Chord.MOD_NAME + " boat");
     }
 
     @Override
-    public BoatEntity.Type getBoatType() {
+    public BoatEntity.Type getVariant() {
         return this.info.getVanillaType();
     }
 }

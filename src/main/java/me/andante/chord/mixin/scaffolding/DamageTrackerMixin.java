@@ -4,8 +4,8 @@ import me.andante.chord.block.CScaffoldingBlock;
 import net.minecraft.block.Block;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageTracker;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -26,7 +26,7 @@ public class DamageTrackerMixin {
         Optional<BlockPos> optional = this.entity.getClimbingPos();
         if (optional.isPresent()) {
             Block block = this.entity.world.getBlockState(optional.get()).getBlock();
-            if (block instanceof CScaffoldingBlock) this.fallDeathSuffix = Registry.BLOCK.getId(block).toString();
+            if (block instanceof CScaffoldingBlock) this.fallDeathSuffix = Registries.BLOCK.getId(block).toString();
         }
     }
 }
